@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if cls else '添加' }}班级{% endblock %}
+{% block content %}
+<h3>{{ '编辑' if cls else '添加' }}班级</h3>
+<form method="POST" class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">班级编号</label>
+        <input type="text" class="form-control" name="class_id" required
+               value="{{ cls.class_id if cls else '' }}" {{ 'readonly' if cls }}>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">班级名称</label>
+        <input type="text" class="form-control" name="class_name" required
+               value="{{ cls.class_name if cls else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">所属专业</label>
+        <select class="form-select" name="major_id" required>
+            {% for m in majors %}
+                <option value="{{ m.major_id }}" {{ 'selected' if cls and cls.major_id == m.major_id }}>
+                    {{ m.major_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">辅导员（教师工号）</label>
+        <select class="form-select" name="counselor_id">
+            <option value="">-- 不分配 --</option>
+            {% for t in teachers %}
+                <option value="{{ t.related_id }}" {{ 'selected' if cls and cls.counselor_id == t.related_id }}>
+                    {{ t.name }} ({{ t.related_id }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">年级</label>
+        <input type="number" class="form-control" name="grade"
+               value="{{ cls.grade if cls else '' }}">
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <a href="{{ url_for('base_data.class_list') }}" class="btn btn-secondary">取消</a>
+    </div>
+</form>
+{% endblock %}

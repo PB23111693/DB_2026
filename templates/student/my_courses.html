@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}我的课程{% endblock %}
+{% block content %}
+<h3>我的课程</h3>
+{% if courses %}
+<table class="table table-striped">
+    <thead>
+        <tr><th>课程编号</th><th>课程名称</th><th>学分</th><th>授课教师</th><th>学期</th><th>成绩</th><th>绩点</th></tr>
+    </thead>
+    <tbody>
+    {% for item in courses %}
+        <tr>
+            <td>{{ item.course.course_id if item.course else '' }}</td>
+            <td>{{ item.course.course_name if item.course else '' }}</td>
+            <td>{{ "%.1f"|format(item.course.credit) if item.course and item.course.credit else '' }}</td>
+            <td>{{ item.teacher.username if item.teacher else '未分配' }}</td>
+            <td>{{ item.enrollment.semester }}</td>
+            <td>{{ item.score.total_score if item.score else '未录入' }}</td>
+            <td>
+                {% if item.score and item.score.total_score %}
+                    {% if item.score.total_score >= 90 %}4.0
+                    {% elif item.score.total_score >= 80 %}3.0
+                    {% elif item.score.total_score >= 70 %}2.0
+                    {% elif item.score.total_score >= 60 %}1.0
+                    {% else %}0{% endif %}
+                {% else %}-{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">您尚未选修任何课程。</p>
+{% endif %}
+{% endblock %}

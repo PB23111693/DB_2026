@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if student else '添加' }}学生 - 学籍管理系统{% endblock %}
+{% block content %}
+<h3>{{ '编辑' if student else '添加' }}学生</h3>
+<form method="POST" enctype="multipart/form-data" class="row g-3">
+    <!-- 基本信息（与之前相同） -->
+    <div class="col-md-3">
+        <label for="stu_id" class="form-label">学号 *</label>
+        <input type="text" class="form-control" id="stu_id" name="stu_id" required
+               value="{{ student.stu_id if student else '' }}" {{ 'readonly' if student }}>
+    </div>
+    <div class="col-md-3">
+        <label for="name" class="form-label">姓名 *</label>
+        <input type="text" class="form-control" id="name" name="name" required
+               value="{{ student.name if student else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label for="gender" class="form-label">性别</label>
+        <select class="form-select" id="gender" name="gender">
+            <option value="">--</option>
+            <option value="M" {{ 'selected' if student and student.gender == 'M' }}>男</option>
+            <option value="F" {{ 'selected' if student and student.gender == 'F' }}>女</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="birth" class="form-label">出生日期</label>
+        <input type="date" class="form-control" id="birth" name="birth"
+               value="{{ student.birth.strftime('%Y-%m-%d') if student and student.birth else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label for="ethnicity" class="form-label">民族</label>
+        <input type="text" class="form-control" id="ethnicity" name="ethnicity"
+               value="{{ student.ethnicity if student else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label for="political_status" class="form-label">政治面貌</label>
+        <input type="text" class="form-control" id="political_status" name="political_status"
+               value="{{ student.political_status if student else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label for="native_place" class="form-label">籍贯</label>
+        <input type="text" class="form-control" id="native_place" name="native_place"
+               value="{{ student.native_place if student else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label for="id_card" class="form-label">身份证号</label>
+        <input type="text" class="form-control" id="id_card" name="id_card"
+               value="{{ student.id_card if student else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label for="phone" class="form-label">联系电话</label>
+        <input type="text" class="form-control" id="phone" name="phone"
+               value="{{ student.phone if student else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label for="email" class="form-label">电子邮箱</label>
+        <input type="email" class="form-control" id="email" name="email"
+               value="{{ student.email if student else '' }}">
+    </div>
+    <div class="col-md-5">
+        <label for="address" class="form-label">家庭住址</label>
+        <input type="text" class="form-control" id="address" name="address"
+               value="{{ student.address if student else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label for="enrollment_year" class="form-label">入学年份</label>
+        <input type="number" class="form-control" id="enrollment_year" name="enrollment_year"
+               value="{{ student.enrollment_year if student else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label for="status" class="form-label">当前状态</label>
+        <select class="form-select" id="status" name="status">
+            <option value="在读" {{ 'selected' if student and student.status == '在读' }}>在读</option>
+            <option value="休学" {{ 'selected' if student and student.status == '休学' }}>休学</option>
+            <option value="退学" {{ 'selected' if student and student.status == '退学' }}>退学</option>
+            <option value="毕业" {{ 'selected' if student and student.status == '毕业' }}>毕业</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="class_id" class="form-label">班级 *</label>
+        <select class="form-select" id="class_id" name="class_id" required>
+            {% for cls in classes %}
+                <option value="{{ cls.class_id }}" {{ 'selected' if student and student.class_id == cls.class_id }}>
+                    {{ cls.class_name }} ({{ cls.major.major_name if cls.major }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- 文件上传区域 -->
+    <div class="col-md-6">
+        <label class="form-label">照片</label>
+        <input type="file" class="form-control" name="photo" accept="image/*" onchange="previewImage(this, 'photoPreview')">
+        {% if student and student.photo_path %}
+            <div class="mt-2">
+                <img id="photoPreview" src="{{ url_for('upload.serve_uploaded', subpath=student.photo_path) }}" class="photo-preview">
+                <p class="text-muted small">当前照片</p>
+            </div>
+        {% else %}
+            <img id="photoPreview" class="photo-preview mt-2" style="display:none;">
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">简历文件 (PDF/DOC)</label>
+        <input type="file" class="form-control" name="resume" accept=".pdf,.doc,.docx">
+        {% if student and student.resume_path %}
+            <div class="mt-2">
+                <a href="{{ url_for('upload.serve_uploaded', subpath=student.resume_path) }}" target="_blank">查看当前简历</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ---- 新增：同步创建用户复选框（仅新增时显示） ---- -->
+    {% if not student %}
+    <div class="col-12">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="create_user" name="create_user" value="yes" checked>
+            <label class="form-check-label" for="create_user">
+                同步创建学生登录账号（用户名和初始密码均为学号）
+            </label>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="col-12 mt-3">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <a href="{{ url_for('student.list') }}" class="btn btn-secondary">取消</a>
+    </div>
+</form>
+
+<script>
+function previewImage(input, previewId) {
+    var preview = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

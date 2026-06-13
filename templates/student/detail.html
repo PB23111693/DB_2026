@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block title %}{{ student.name }} - 学生详情{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">基本信息</div>
+            <div class="card-body">
+                {% if student.photo_path %}
+                    <img src="{{ url_for('upload.serve_uploaded', subpath=student.photo_path) }}" class="img-fluid rounded mb-2">
+                {% endif %}
+                <table class="table table-sm">
+                    <tr><td>学号</td><td>{{ student.stu_id }}</td></tr>
+                    <tr><td>姓名</td><td>{{ student.name }}</td></tr>
+                    <tr><td>性别</td><td>{{ '男' if student.gender == 'M' else '女' if student.gender == 'F' else '' }}</td></tr>
+                    <tr><td>出生日期</td><td>{{ student.birth.strftime('%Y-%m-%d') if student.birth else '' }}</td></tr>
+                    <tr><td>民族</td><td>{{ student.ethnicity or '' }}</td></tr>
+                    <tr><td>政治面貌</td><td>{{ student.political_status or '' }}</td></tr>
+                    <tr><td>籍贯</td><td>{{ student.native_place or '' }}</td></tr>
+                    <tr><td>身份证号</td><td>{{ student.id_card or '' }}</td></tr>
+                    <tr><td>联系电话</td><td>{{ student.phone or '' }}</td></tr>
+                    <tr><td>邮箱</td><td>{{ student.email or '' }}</td></tr>
+                    <tr><td>地址</td><td>{{ student.address or '' }}</td></tr>
+                    <tr><td>入学年份</td><td>{{ student.enrollment_year if student.enrollment_year else '' }}</td></tr>
+                    <tr><td>状态</td><td><span class="badge {% if student.status == '在读' %}bg-success{% elif student.status == '休学' %}bg-warning{% elif student.status == '退学' %}bg-danger{% else %}bg-secondary{% endif %}">{{ student.status }}</span></td></tr>
+                    <tr><td>班级</td><td>{{ student.class_.class_name if student.class_ else '' }}</td></tr>
+                    <tr><td>专业</td><td>{{ student.class_.major.major_name if student.class_ and student.class_.major else '' }}</td></tr>
+                    <tr><td>院系</td><td>{{ student.class_.major.department.dept_name if student.class_ and student.class_.major and student.class_.major.department else '' }}</td></tr>
+                    {% if student.summary %}
+                    <tr><td>GPA</td><td><strong>{{ "%.2f"|format(student.summary.gpa) }}</strong></td></tr>
+                    <tr><td>已获学分</td><td>{{ "%.1f"|format(student.summary.total_credits) }}</td></tr>
+                    {% endif %}
+                </table>
+                {% if student.resume_path %}
+                    <a href="{{ url_for('upload.serve_uploaded', subpath=student.resume_path) }}" class="btn btn-sm btn-outline-primary">下载简历</a>
+                {% endif %}
+                {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('student.edit', stu_id=student.stu_id) }}" class="btn btn-sm btn-warning mt-2">编辑</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- 专业变更记录 -->
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>专业变更记录</span>
+                {% if current_user.role in ('admin', 'teacher') %}
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#majorChangeModal">新增变更</button>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if student.major_changes %}
+                <table class="table table-sm">
+                    <thead><tr><th>原专业</th><th>新专业</th><th>变更日期</th><th>原因</th><th>操作</th></tr></thead>
+                    <tbody>
+                    {% for mc in student.major_changes %}
+                        <tr>
+                            <td>{{ mc.origin_major }}</td>
+                            <td>{{ mc.new_major }}</td>
+                            <td>{{ mc.change_date }}</td>
+                            <td>{{ mc.reason or '' }}</td>
+                            <td>
+                                {% if current_user.role in ('admin', 'teacher') %}
+                                    <form method="POST" action="{{ url_for('major_change.delete_change', change_id=mc.change_id) }}" style="display:inline;"
+                                          onsubmit="return confirm('确认删除此变更记录？');">
+                                        <button class="btn btn-sm btn-danger">删除</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">暂无专业变更记录</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 奖励记录 -->
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>奖励记录</span>
+                {% if current_user.role in ('admin', 'teacher') %}
+                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#awardModal">添加奖励</button>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if student.awards %}
+                <table class="table table-sm">
+                    <thead><tr><th>名称</th><th>级别</th><th>获奖日期</th><th>颁奖单位</th><th>证书</th><th>操作</th></tr></thead>
+                    <tbody>
+                    {% for a in student.awards %}
+                        <tr>
+                            <td>{{ a.award_name }}</td>
+                            <td>{{ a.award_level or '' }}</td>
+                            <td>{{ a.award_date }}</td>
+                            <td>{{ a.issuer or '' }}</td>
+                            <td>
+                                {% if a.certificate_path %}
+                                    <a href="{{ url_for('upload.serve_uploaded', subpath=a.certificate_path) }}" target="_blank">查看</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if current_user.role in ('admin', 'teacher') %}
+                                    <form method="POST" action="{{ url_for('award.delete_award', award_id=a.award_id) }}" style="display:inline;"
+                                          onsubmit="return confirm('确认删除此奖励？');">
+                                        <button class="btn btn-sm btn-danger">删除</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">暂无奖励记录</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 处罚记录 -->
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>处罚记录</span>
+                {% if current_user.role in ('admin', 'teacher') %}
+                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#punishModal">添加处罚</button>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if student.punishments %}
+                <table class="table table-sm">
+                    <thead><tr><th>类型</th><th>日期</th><th>原因</th><th>解除日期</th><th>文件</th><th>操作</th></tr></thead>
+                    <tbody>
+                    {% for p in student.punishments %}
+                        <tr>
+                            <td>{{ p.punish_type }}</td>
+                            <td>{{ p.punish_date }}</td>
+                            <td>{{ p.reason or '' }}</td>
+                            <td>{{ p.lift_date or '未解除' }}</td>
+                            <td>
+                                {% if p.file_path %}
+                                    <a href="{{ url_for('upload.serve_uploaded', subpath=p.file_path) }}" target="_blank">查看</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if current_user.role in ('admin', 'teacher') %}
+                                    <form method="POST" action="{{ url_for('award.delete_punish', punish_id=p.punish_id) }}" style="display:inline;"
+                                          onsubmit="return confirm('确认删除此处罚？');">
+                                        <button class="btn btn-sm btn-danger">删除</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">暂无处罚记录</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 成绩记录（无加权绩点列，仅保留绩点，合计行显示GPA） -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>成绩信息</span>
+                <a href="{{ url_for('score.download_transcript', stu_id=student.stu_id) }}" class="btn btn-sm btn-info">导出成绩单PDF</a>
+            </div>
+            <div class="card-body">
+                {% set enrolls = student.enrollments %}
+                {% if enrolls %}
+                <table class="table table-sm">
+                    <thead><tr><th>课程</th><th>学分</th><th>平时</th><th>期末</th><th>总评</th><th>绩点</th></tr></thead>
+                    <tbody>
+                    {% set total_credits = namespace(value=0) %}
+                    {% set total_weighted = namespace(value=0) %}
+                    {% for e in enrolls %}
+                        {% set sc = e.score %}
+                        {% if sc and sc.total_score is not none %}
+                            {% set gpa_pt = 4.0 if sc.total_score >= 90 else 3.0 if sc.total_score >= 80 else 2.0 if sc.total_score >= 70 else 1.0 if sc.total_score >= 60 else 0 %}
+                            {% set credit_val = e.course.credit|float if e.course and e.course.credit else 0 %}
+                            {% set weighted = gpa_pt * credit_val %}
+                            {% set total_weighted.value = total_weighted.value + weighted %}
+                            {% set total_credits.value = total_credits.value + credit_val %}
+                        {% else %}
+                            {% set gpa_pt = '-' %}
+                            {% set credit_val = e.course.credit|float if e.course and e.course.credit else 0 %}
+                        {% endif %}
+                        <tr>
+                            <td>{{ e.course.course_name if e.course else '' }}</td>
+                            <td>{{ "%.1f"|format(credit_val) }}</td>
+                            <td>{{ "%.1f"|format(sc.regular_score) if sc and sc.regular_score is not none else '' }}</td>
+                            <td>{{ "%.1f"|format(sc.final_score) if sc and sc.final_score is not none else '' }}</td>
+                            <td>{{ "%.1f"|format(sc.total_score) if sc and sc.total_score is not none else '' }}</td>
+                            <td>{{ gpa_pt }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-info fw-bold">
+                            <td colspan="2">合计</td>
+                            <td colspan="3">已修学分：{{ "%.1f"|format(total_credits.value) }}</td>
+                            <td>GPA：{{ "%.2f"|format(total_weighted.value / total_credits.value) if total_credits.value > 0 else '0.00' }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                {% else %}
+                <p class="text-muted">暂无成绩</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模态框部分保持不变 -->
+<!-- 专业变更模态框 -->
+<div class="modal fade" id="majorChangeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ url_for('major_change.new_change') }}" class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">新增专业变更</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" name="stu_id" value="{{ student.stu_id }}">
+                <div class="mb-3">
+                    <label class="form-label">新专业</label>
+                    <select class="form-select" name="new_major">
+                        {% for m in majors %}
+                            <option value="{{ m.major_id }}">{{ m.major_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3"><label class="form-label">变更日期</label><input type="date" class="form-control" name="change_date" required></div>
+                <div class="mb-3"><label class="form-label">审批文号</label><input type="text" class="form-control" name="approval_doc"></div>
+                <div class="mb-3"><label class="form-label">原因</label><textarea class="form-control" name="reason" rows="2"></textarea></div>
+                <div class="mb-3"><label class="form-label">操作员</label><input type="text" class="form-control" name="operator" value="{{ current_user.username }}"></div>
+            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-primary">保存</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- 奖励模态框 -->
+<div class="modal fade" id="awardModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ url_for('award.add_award') }}" enctype="multipart/form-data" class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">添加奖励</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" name="stu_id" value="{{ student.stu_id }}">
+                <div class="mb-3"><label class="form-label">奖励名称</label><input type="text" class="form-control" name="award_name" required></div>
+                <div class="mb-3"><label class="form-label">级别</label><input type="text" class="form-control" name="award_level"></div>
+                <div class="mb-3"><label class="form-label">获奖日期</label><input type="date" class="form-control" name="award_date" required></div>
+                <div class="mb-3"><label class="form-label">颁奖单位</label><input type="text" class="form-control" name="issuer"></div>
+                <div class="mb-3"><label class="form-label">证书文件</label><input type="file" class="form-control" name="certificate"></div>
+            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-success">保存</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- 处罚模态框 -->
+<div class="modal fade" id="punishModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ url_for('award.add_punish') }}" enctype="multipart/form-data" class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">添加处罚</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" name="stu_id" value="{{ student.stu_id }}">
+                <div class="mb-3"><label class="form-label">处罚类型</label><input type="text" class="form-control" name="punish_type" required></div>
+                <div class="mb-3"><label class="form-label">处罚日期</label><input type="date" class="form-control" name="punish_date" required></div>
+                <div class="mb-3"><label class="form-label">原因</label><textarea class="form-control" name="reason" rows="2"></textarea></div>
+                <div class="mb-3"><label class="form-label">解除日期</label><input type="date" class="form-control" name="lift_date"></div>
+                <div class="mb-3"><label class="form-label">处分文件</label><input type="file" class="form-control" name="file"></div>
+            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-danger">保存</button></div>
+        </form>
+    </div>
+</div>
+{% endblock %}

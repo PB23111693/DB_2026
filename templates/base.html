@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}学籍管理系统{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        .photo-preview { max-width: 200px; max-height: 200px; }
+        .navbar .dropdown-menu { min-width: 10rem; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('index') }}">学籍管理系统</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if current_user.is_authenticated %}
+                    <!-- 所有角色都可见 -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student.list') }}">学生管理</a>
+                    </li>
+
+                    <!-- 教师角色专用 -->
+                    {% if current_user.role == 'teacher' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teacher.dashboard') }}">我的课程</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('score.manage') }}">成绩管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('major_change.list') }}">专业变更</a>
+                        </li>
+                    {% endif %}
+
+                    <!-- 学生角色专用 -->
+                    {% if current_user.role == 'student' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('student.enroll_course') }}">选课中心</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('student.my_courses') }}">我的课程</a>
+                        </li>
+                    {% endif %}
+
+                    <!-- 管理员角色专用 -->
+                    {% if current_user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.list', role='teacher') }}">教师管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('course.list') }}">课程管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('score.manage') }}">成绩管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('enrollment_admin.list_enrollments') }}">选课管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('major_change.list') }}">专业变更</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="basicDataDropdown" role="button" data-bs-toggle="dropdown">
+                                基础数据
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('base_data.dept_list') }}">院系管理</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('base_data.major_list') }}">专业管理</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('base_data.class_list') }}">班级管理</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.list') }}">用户管理</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+
+            <!-- 右侧用户下拉菜单 -->
+            {% if current_user.is_authenticated %}
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        {{ current_user.username }} ({{ {'admin':'管理员','teacher':'教师','student':'学生'}.get(current_user.role, '') }})
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}">修改密码</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">退出</a></li>
+                    </ul>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

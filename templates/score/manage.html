@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}成绩管理{% endblock %}
+{% block content %}
+<h3>成绩录入与查询</h3>
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">录入/修改成绩</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">学生</label>
+                        <select class="form-select" name="stu_id" required>
+                            {% for s in students %}
+                                <option value="{{ s.stu_id }}">{{ s.stu_id }} - {{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">课程</label>
+                        <select class="form-select" name="course_id" required>
+                            {% for c in courses %}
+                                <option value="{{ c.course_id }}">{{ c.course_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">学期</label>
+                        <input type="text" class="form-control" name="semester" value="2024-2025-1">
+                    </div>
+                    <div class="row">
+                        <div class="col"><label class="form-label">平时</label><input type="number" step="0.1" class="form-control" name="regular" min="0"></div>
+                        <div class="col"><label class="form-label">期末</label><input type="number" step="0.1" class="form-control" name="final" min="0"></div>
+                        <div class="col"><label class="form-label">总评</label><input type="number" step="0.1" class="form-control" name="total" min="0"></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col"><label class="form-label">考核方式</label>
+                            <select class="form-select" name="exam_method">
+                                <option value="考试">考试</option>
+                                <option value="考查">考查</option>
+                            </select>
+                        </div>
+                        <div class="col"><label class="form-label">补考成绩</label><input type="number" step="0.1" class="form-control" name="makeup" min="0"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">保存成绩</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">成绩列表</div>
+            <div class="card-body" style="max-height:500px; overflow-y:auto;">
+                <table class="table table-sm">
+                    <thead><tr><th>学生</th><th>课程</th><th>学分</th><th>平时</th><th>期末</th><th>总评</th><th>绩点</th><th>操作</th></tr></thead>
+                    <tbody>
+                    {% for s in scores %}
+                        {% set e = s.enrollment %}
+                        {% set cr = (e.course.credit|float) if e and e.course and e.course.credit else 0 %}
+                        {% set gpa_pt = 4.0 if s.total_score and s.total_score >= 90 else 3.0 if s.total_score and s.total_score >= 80 else 2.0 if s.total_score and s.total_score >= 70 else 1.0 if s.total_score and s.total_score >= 60 else 0 if s.total_score is not none else '' %}
+                        <tr>
+                            <td>{{ e.student.name if e and e.student else '' }}</td>
+                            <td>{{ e.course.course_name if e and e.course else '' }}</td>
+                            <td>{{ "%.1f"|format(cr) }}</td>
+                            <td>{{ "%.1f"|format(s.regular_score) if s.regular_score is not none else '' }}</td>
+                            <td>{{ "%.1f"|format(s.final_score) if s.final_score is not none else '' }}</td>
+                            <td>{{ "%.1f"|format(s.total_score) if s.total_score is not none else '' }}</td>
+                            <td>{{ gpa_pt }}</td>
+                            <td>
+                                {% if current_user.role in ('admin', 'teacher') %}
+                                    <form method="POST" action="{{ url_for('score.delete_score', score_id=s.score_id) }}" style="display:inline;"
+                                          onsubmit="return confirm('确认删除该成绩？');">
+                                        <button class="btn btn-sm btn-danger">删除</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<a href="{{ url_for('score.stats') }}" class="btn btn-outline-info mt-2">成绩统计分析</a>
+{% endblock %}

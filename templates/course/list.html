@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}课程列表{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>课程列表</h3>
+    {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('course.add') }}" class="btn btn-primary">添加课程</a>
+    {% endif %}
+</div>
+<table class="table table-striped">
+    <thead>
+        <tr><th>课程编号</th><th>课程名称</th><th>学分</th><th>学时</th><th>院系</th><th>类型</th><th>授课教师</th><th>大纲</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {% for c in courses %}
+        {% set teacher_user = get_teacher_by_related_id(c.teacher_id) %}
+        <tr>
+            <td>{{ c.course_id }}</td>
+            <td>{{ c.course_name }}</td>
+            <td>{{ "%.1f"|format(c.credit) if c.credit else '' }}</td>
+            <td>{{ c.hours }}</td>
+            <td>{{ c.dept.dept_name if c.dept }}</td>
+            <td>{{ c.course_type or '' }}</td>
+            <td>{{ teacher_user.username if teacher_user else '未分配' }}</td>
+            <td>
+                {% if c.syllabus_path %}
+                    <a href="{{ url_for('upload.serve_uploaded', subpath=c.syllabus_path) }}" target="_blank">查看</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('course.edit', course_id=c.course_id) }}" class="btn btn-sm btn-warning">编辑</a>
+                    <form method="POST" action="{{ url_for('course.delete', course_id=c.course_id) }}" style="display:inline;">
+                        <button class="btn btn-sm btn-danger" onclick="return confirm('确认删除？')">删除</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if major else '添加' }}专业{% endblock %}
+{% block content %}
+<h3>{{ '编辑' if major else '添加' }}专业</h3>
+<form method="POST" class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">专业编号</label>
+        <input type="text" class="form-control" name="major_id" required
+               value="{{ major.major_id if major else '' }}" {{ 'readonly' if major }}>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">专业名称</label>
+        <input type="text" class="form-control" name="major_name" required
+               value="{{ major.major_name if major else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">所属院系</label>
+        <select class="form-select" name="dept_id" required>
+            {% for d in departments %}
+                <option value="{{ d.dept_id }}" {{ 'selected' if major and major.dept_id == d.dept_id }}>
+                    {{ d.dept_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">学制(年)</label>
+        <input type="number" class="form-control" name="duration"
+               value="{{ major.duration if major else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">学位类型</label>
+        <input type="text" class="form-control" name="degree_type"
+               value="{{ major.degree_type if major else '' }}">
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <a href="{{ url_for('base_data.major_list') }}" class="btn btn-secondary">取消</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}选课管理{% endblock %}
+{% block content %}
+<h3>选课管理</h3>
+
+<!-- 添加选课表单 -->
+<div class="card mb-4">
+    <div class="card-header">添加选课</div>
+    <div class="card-body">
+        <form method="POST" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">学生</label>
+                <select class="form-select" name="stu_id" required>
+                    {% for s in students %}
+                        <option value="{{ s.stu_id }}">{{ s.stu_id }} - {{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">课程</label>
+                <select class="form-select" name="course_id" required>
+                    {% for c in courses %}
+                        <option value="{{ c.course_id }}">{{ c.course_id }} - {{ c.course_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">学期</label>
+                <input type="text" class="form-control" name="semester" value="2024-2025-1" required>
+            </div>
+            <div class="col-md-2 align-self-end">
+                <button type="submit" class="btn btn-primary w-100">添加选课</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 选课列表 -->
+<table class="table table-striped">
+    <thead>
+        <tr><th>ID</th><th>学号</th><th>姓名</th><th>课程编号</th><th>课程名称</th><th>学期</th><th>选课日期</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {% for e in enrollments %}
+        <tr>
+            <td>{{ e.enroll_id }}</td>
+            <td>{{ e.stu_id }}</td>
+            <td>{{ e.student.name if e.student else '' }}</td>
+            <td>{{ e.course_id }}</td>
+            <td>{{ e.course.course_name if e.course else '' }}</td>
+            <td>{{ e.semester }}</td>
+            <td>{{ e.enroll_date }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('enrollment_admin.delete_enrollment', enroll_id=e.enroll_id) }}" style="display:inline;"
+                      onsubmit="return confirm('确认删除此选课？成绩将同时删除！');">
+                    <button class="btn btn-sm btn-danger">删除</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

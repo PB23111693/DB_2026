@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}院系管理{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>院系列表</h3>
+    <a href="{{ url_for('base_data.dept_add') }}" class="btn btn-primary">添加院系</a>
+</div>
+<table class="table table-striped">
+    <thead><tr><th>编号</th><th>名称</th><th>院长</th><th>电话</th><th>办公地点</th><th>操作</th></tr></thead>
+    <tbody>
+    {% for d in departments %}
+        <tr>
+            <td>{{ d.dept_id }}</td>
+            <td>{{ d.dept_name }}</td>
+            <td>{{ d.dean or '' }}</td>
+            <td>{{ d.phone or '' }}</td>
+            <td>{{ d.office or '' }}</td>
+            <td>
+                <a href="{{ url_for('base_data.dept_edit', dept_id=d.dept_id) }}" class="btn btn-sm btn-warning">编辑</a>
+                <form method="POST" action="{{ url_for('base_data.dept_delete', dept_id=d.dept_id) }}" style="display:inline;"
+                      onsubmit="return confirm('确认删除此院系？关联数据将受到影响！');">
+                    <button class="btn btn-sm btn-danger">删除</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

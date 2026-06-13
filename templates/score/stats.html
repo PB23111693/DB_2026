@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}成绩统计分析{% endblock %}
+{% block content %}
+<h3>成绩统计分析</h3>
+<div class="row mt-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">各课程统计</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead><tr><th>课程</th><th>平均分</th><th>最高分</th><th>最低分</th></tr></thead>
+                    <tbody>
+                    {% for s in stats %}
+                        <tr>
+                            <td>{{ s.course_name }}</td>
+                            <td>{{ '%0.1f'|format(s.avg_score) if s.avg_score is not none else '-' }}</td>
+                            <td>{{ '%0.1f'|format(s.max_score) if s.max_score is not none else '-' }}</td>
+                            <td>{{ '%0.1f'|format(s.min_score) if s.min_score is not none else '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">学生 GPA 排名</div>
+            <div class="card-body" style="max-height:400px; overflow-y:auto;">
+                <table class="table table-sm">
+                    <thead><tr><th>排名</th><th>姓名</th><th>GPA</th></tr></thead>
+                    <tbody>
+                    {% for r in rankings %}
+                        <tr>
+                            <td>{{ r.rank }}</td>
+                            <td>{{ r.name }}</td>
+                            <td>{{ '%0.2f'|format(r.gpa) }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<a href="{{ url_for('score.manage') }}" class="btn btn-secondary mt-3">返回成绩管理</a>
+{% endblock %}

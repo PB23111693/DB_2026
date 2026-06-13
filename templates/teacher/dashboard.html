@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}我的课程 - 教师{% endblock %}
+{% block content %}
+<h3>我的课程</h3>
+{% if courses %}
+<table class="table table-striped">
+    <thead>
+        <tr><th>课程编号</th><th>课程名称</th><th>学分</th><th>学生人数</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {% for item in courses %}
+        <tr>
+            <td>{{ item.course.course_id }}</td>
+            <td>{{ item.course.course_name }}</td>
+            <td>{{ "%.1f"|format(item.course.credit) if item.course.credit else '' }}</td>
+            <td>{{ item.student_count }}</td>
+            <td>
+                <a href="{{ url_for('teacher.course_students', course_id=item.course.course_id) }}" class="btn btn-sm btn-info">查看学生</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">您尚未被分配任何课程，请联系管理员。</p>
+{% endif %}
+{% endblock %}

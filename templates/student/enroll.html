@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}选课中心 - {{ student.name }}{% endblock %}
+{% block content %}
+<h3>选课中心</h3>
+<p><strong>{{ student.name }}</strong> ({{ student.stu_id }})</p>
+
+{% if courses %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>课程编号</th>
+            <th>课程名称</th>
+            <th>学分</th>
+            <th>授课教师</th>
+            <th>课程性质</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for c in courses %}
+        {% set is_enrolled = c.course_id in enrolled_course_ids %}
+        {% set teacher_user = get_teacher_by_related_id(c.teacher_id) %}
+        <tr>
+            <td>{{ c.course_id }}</td>
+            <td>{{ c.course_name }}</td>
+            <td>{{ "%.1f"|format(c.credit) if c.credit else '' }}</td>
+            <td>{{ teacher_user.username if teacher_user else '未分配' }}</td>
+            <td>{{ c.course_type or '' }}</td>
+            <td>
+                {% if is_enrolled %}
+                    <span class="badge bg-success">已选</span>
+                {% else %}
+                    <span class="badge bg-secondary">未选</span>
+                {% endif %}
+            </td>
+            <td>
+                <form method="POST" action="{{ url_for('student.toggle_enroll', course_id=c.course_id) }}">
+                    {% if is_enrolled %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">退选</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-sm btn-outline-primary">选课</button>
+                    {% endif %}
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">暂无可选课程</p>
+{% endif %}
+
+<a href="{{ url_for('student.my_courses') }}" class="btn btn-secondary mt-3">返回我的课程</a>
+{% endblock %}

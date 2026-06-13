@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}新增专业变更{% endblock %}
+{% block content %}
+<h3>新增专业变更</h3>
+<form method="POST" class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">学生</label>
+        <select class="form-select" name="stu_id" required>
+            {% for s in students %}
+                <option value="{{ s.stu_id }}">{{ s.stu_id }} - {{ s.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">新专业</label>
+        <select class="form-select" name="new_major">
+            {% for m in majors %}
+                <option value="{{ m.major_id }}">{{ m.major_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">变更日期</label>
+        <input type="date" class="form-control" name="change_date" required>
+    </div>
+    <div class="col-12">
+        <label class="form-label">审批文号</label>
+        <input type="text" class="form-control" name="approval_doc">
+    </div>
+    <div class="col-12">
+        <label class="form-label">原因</label>
+        <textarea class="form-control" name="reason" rows="2"></textarea>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">操作员</label>
+        <input type="text" class="form-control" name="operator" value="admin">
+    </div>
+    <div class="col-12 mt-3">
+        <button type="submit" class="btn btn-primary">提交变更</button>
+        <a href="{{ url_for('major_change.list') }}" class="btn btn-secondary">取消</a>
+    </div>
+</form>
+{% endblock %}

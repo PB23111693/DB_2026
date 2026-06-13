@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if dept else '添加' }}院系{% endblock %}
+{% block content %}
+<h3>{{ '编辑' if dept else '添加' }}院系</h3>
+<form method="POST" class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">院系编号</label>
+        <input type="text" class="form-control" name="dept_id" required
+               value="{{ dept.dept_id if dept else '' }}" {{ 'readonly' if dept }}>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">院系名称</label>
+        <input type="text" class="form-control" name="dept_name" required
+               value="{{ dept.dept_name if dept else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">院长</label>
+        <input type="text" class="form-control" name="dean"
+               value="{{ dept.dean if dept else '' }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">联系电话</label>
+        <input type="text" class="form-control" name="phone"
+               value="{{ dept.phone if dept else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">办公地点</label>
+        <input type="text" class="form-control" name="office"
+               value="{{ dept.office if dept else '' }}">
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <a href="{{ url_for('base_data.dept_list') }}" class="btn btn-secondary">取消</a>
+    </div>
+</form>
+{% endblock %}

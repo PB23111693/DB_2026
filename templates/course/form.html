@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if course else '添加' }}课程{% endblock %}
+{% block content %}
+<h3>{{ '编辑' if course else '添加' }}课程</h3>
+<form method="POST" enctype="multipart/form-data" class="row g-3">
+    <div class="col-md-3">
+        <label for="course_id" class="form-label">课程编号 *</label>
+        <input type="text" class="form-control" id="course_id" name="course_id" required
+               value="{{ course.course_id if course else '' }}" {{ 'readonly' if course }}>
+    </div>
+    <div class="col-md-3">
+        <label for="course_name" class="form-label">课程名称 *</label>
+        <input type="text" class="form-control" id="course_name" name="course_name" required
+               value="{{ course.course_name if course else '' }}">
+    </div>
+    <div class="col-md-2">
+        <label for="credit" class="form-label">学分</label>
+        <input type="number" step="0.1" class="form-control" id="credit" name="credit"
+               value="{{ course.credit if course else '' }}">
+    </div>
+    <div class="col-md-2">
+        <label for="hours" class="form-label">学时</label>
+        <input type="number" class="form-control" id="hours" name="hours"
+               value="{{ course.hours if course else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label for="dept_id" class="form-label">开课院系 *</label>
+        <select class="form-select" id="dept_id" name="dept_id" required>
+            {% for d in departments %}
+                <option value="{{ d.dept_id }}" {{ 'selected' if course and course.dept_id == d.dept_id }}>
+                    {{ d.dept_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="course_type" class="form-label">课程性质</label>
+        <select class="form-select" id="course_type" name="course_type">
+            <option value="必修" {{ 'selected' if course and course.course_type == '必修' }}>必修</option>
+            <option value="选修" {{ 'selected' if course and course.course_type == '选修' }}>选修</option>
+            <option value="公选" {{ 'selected' if course and course.course_type == '公选' }}>公选</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="teacher_id" class="form-label">授课教师</label>
+        <select class="form-select" id="teacher_id" name="teacher_id">
+            <option value="">-- 暂不分配 --</option>
+            {% for t in teachers %}
+                <option value="{{ t.related_id }}" {{ 'selected' if course and course.teacher_id == t.related_id }}>
+                    {{ t.username }} ({{ t.related_id }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">教学大纲 (PDF/DOC)</label>
+        <input type="file" class="form-control" name="syllabus" accept=".pdf,.doc,.docx">
+        {% if course and course.syllabus_path %}
+            <div class="mt-2"><a href="{{ url_for('upload.serve_uploaded', subpath=course.syllabus_path) }}" target="_blank">当前大纲</a></div>
+        {% endif %}
+    </div>
+    <div class="col-12 mt-3">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <a href="{{ url_for('course.list') }}" class="btn btn-secondary">取消</a>
+    </div>
+</form>
+{% endblock %}

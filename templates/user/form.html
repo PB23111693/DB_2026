@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if user else '添加' }}用户{% endblock %}
+{% block content %}
+<h3>{{ '编辑' if user else '添加' }}{{ '教师' if preselected_role == 'teacher' else '用户' }}</h3>
+<form method="POST" class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">用户名</label>
+        <input type="text" name="username" class="form-control" required
+               value="{{ user.username if user else '' }}" {{ 'readonly' if user }}>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">密码</label>
+        <input type="password" name="password" class="form-control" {{ '' if user else 'required' }}>
+        {% if user %}<small class="text-muted">留空则不修改密码</small>{% endif %}
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">角色</label>
+        <select class="form-select" name="role" id="roleSelect" onchange="toggleFields()"
+                {{ 'disabled' if preselected_role == 'teacher' and not user }}>
+            <option value="admin" {{ 'selected' if (user and user.role == 'admin') }}>管理员</option>
+            <option value="teacher" {{ 'selected' if (user and user.role == 'teacher') or preselected_role == 'teacher' }}>教师</option>
+            <option value="student" {{ 'selected' if (user and user.role == 'student') }}>学生</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">关联工号/学号</label>
+        <input type="text" name="related_id" class="form-control"
+               value="{{ user.related_id if user else '' }}">
+    </div>
+
+    <!-- 教师字段 -->
+    <div id="teacherFields" class="row g-3" style="display: {{ 'block' if (user and user.role == 'teacher') or preselected_role == 'teacher' else 'none' }};">
+        <div class="col-md-4">
+            <label class="form-label">真实姓名</label>
+            <input type="text" name="name" class="form-control"
+                   value="{{ user.name if user else '' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">所属院系</label>
+            <select class="form-select" name="dept_id">
+                <option value="">-- 不分配 --</option>
+                {% for d in departments %}
+                    <option value="{{ d.dept_id }}" {{ 'selected' if user and user.dept_id == d.dept_id }}>
+                        {{ d.dept_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- 学生字段 -->
+    <div id="studentFields" class="row g-3" style="display: {{ 'block' if (user and user.role == 'student') else 'none' }};">
+        <div class="col-md-4">
+            <label class="form-label">真实姓名</label>
+            <input type="text" name="name" class="form-control"
+                   value="{{ user.name if user else '' }}">
+        </div>
+    </div>
+
+    {% if is_last_admin %}
+    <div class="alert alert-warning">当前用户是唯一的管理员，无法修改角色。</div>
+    {% endif %}
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <a href="{{ url_for('user.list', role=preselected_role if preselected_role else '') }}" class="btn btn-secondary">取消</a>
+    </div>
+</form>
+
+<script>
+function toggleFields() {
+    var role = document.getElementById('roleSelect').value;
+    document.getElementById('teacherFields').style.display = (role === 'teacher') ? 'block' : 'none';
+    document.getElementById('studentFields').style.display = (role === 'student') ? 'block' : 'none';
+}
+window.onload = toggleFields;
+</script>
+{% endblock %}

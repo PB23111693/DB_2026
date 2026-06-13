@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}专业变更记录{% endblock %}
+{% block content %}
+<h3>专业变更记录</h3>
+<a href="{{ url_for('student.list') }}" class="btn btn-outline-secondary mb-3">返回学生列表</a>
+<table class="table table-striped">
+    <thead>
+        <tr><th>学号</th><th>姓名</th><th>原专业</th><th>新专业</th><th>变更日期</th><th>原因</th><th>操作员</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {% for mc in changes %}
+        <tr>
+            <td>{{ mc.stu_id }}</td>
+            <td>{{ mc.student.name if mc.student }}</td>
+            <td>{{ mc.origin_major }}</td>
+            <td>{{ mc.new_major }}</td>
+            <td>{{ mc.change_date }}</td>
+            <td>{{ mc.reason or '' }}</td>
+            <td>{{ mc.operator or '' }}</td>
+            <td>
+                {% if current_user.role in ('admin', 'teacher') %}
+                    <form method="POST" action="{{ url_for('major_change.delete_change', change_id=mc.change_id) }}" style="display:inline;"
+                          onsubmit="return confirm('确认删除该变更记录？');">
+                        <button class="btn btn-sm btn-danger">删除</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

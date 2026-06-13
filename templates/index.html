@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}首页 - 学籍管理系统{% endblock %}
+{% block content %}
+<div class="text-center mt-5">
+    {% if current_user.role == 'student' %}
+        <h2>欢迎，{{ current_user.username }}（学生）</h2>
+        <p class="lead mt-3">
+            <a href="{{ url_for('student.detail', stu_id=current_user.related_id) }}" class="btn btn-primary">
+                查看我的信息
+            </a>
+        </p>
+    {% else %}
+        <h2>欢迎使用学籍管理系统</h2>
+        <p class="lead mt-3">请使用导航栏进行操作</p>
+    {% endif %}
+</div>
+{% endblock %}
