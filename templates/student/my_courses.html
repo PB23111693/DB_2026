@@ -15,7 +15,7 @@
             <td>{{ "%.1f"|format(item.course.credit) if item.course and item.course.credit else '' }}</td>
             <td>{{ item.teacher.username if item.teacher else '未分配' }}</td>
             <td>{{ item.enrollment.semester }}</td>
-            <td>{{ item.score.total_score if item.score else '未录入' }}</td>
+            <td>{{ "%.1f"|format(item.score.total_score) if item.score and item.score.total_score is not none else '未录入' }}</td>
             <td>
                 {% if item.score and item.score.total_score is not none %}
                     {% if item.score.total_score >= 90 %}4.0
