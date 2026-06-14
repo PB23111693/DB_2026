@@ -153,8 +153,15 @@ BEGIN
     SELECT SUM(c.credit),
            SUM(c.credit * CASE
                WHEN s.total_score >= 90 THEN 4.0
-               WHEN s.total_score >= 80 THEN 3.0
-               WHEN s.total_score >= 70 THEN 2.0
+               WHEN s.total_score >= 85 THEN 3.7
+               WHEN s.total_score >= 82 THEN 3.3
+               WHEN s.total_score >= 78 THEN 3.0
+               WHEN s.total_score >= 75 THEN 2.7
+               WHEN s.total_score >= 72 THEN 2.3
+               WHEN s.total_score >= 68 THEN 2.0
+               WHEN s.total_score >= 65 THEN 1.7
+               WHEN s.total_score >= 64 THEN 1.5
+               WHEN s.total_score >= 61 THEN 1.3
                WHEN s.total_score >= 60 THEN 1.0
                ELSE 0 END)
     INTO total_credits, weighted_score

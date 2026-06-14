@@ -163,7 +163,7 @@
             </div>
         </div>
 
-        <!-- 成绩记录（无加权绩点列，仅保留绩点，合计行显示GPA） -->
+        <!-- 成绩记录 -->
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>成绩信息</span>
@@ -180,7 +180,7 @@
                     {% for e in enrolls %}
                         {% set sc = e.score %}
                         {% if sc and sc.total_score is not none %}
-                            {% set gpa_pt = 4.0 if sc.total_score >= 90 else 3.0 if sc.total_score >= 80 else 2.0 if sc.total_score >= 70 else 1.0 if sc.total_score >= 60 else 0 %}
+                            {% set gpa_pt = 4.0 if sc.total_score >= 90 else 3.7 if sc.total_score >= 85 else 3.3 if sc.total_score >= 82 else 3.0 if sc.total_score >= 78 else 2.7 if sc.total_score >= 75 else 2.3 if sc.total_score >= 72 else 2.0 if sc.total_score >= 68 else 1.7 if sc.total_score >= 65 else 1.5 if sc.total_score >= 64 else 1.3 if sc.total_score >= 61 else 1.0 if sc.total_score >= 60 else 0 %}
                             {% set credit_val = e.course.credit|float if e.course and e.course.credit else 0 %}
                             {% set weighted = gpa_pt * credit_val %}
                             {% set total_weighted.value = total_weighted.value + weighted %}
@@ -215,7 +215,6 @@
     </div>
 </div>
 
-<!-- 模态框部分保持不变 -->
 <!-- 专业变更模态框 -->
 <div class="modal fade" id="majorChangeModal" tabindex="-1">
     <div class="modal-dialog">
