@@ -245,7 +245,10 @@ BEGIN
 END $$
 
 -- ------------------------- 存储过程 -------------------------
-CREATE PROCEDURE sp_import_scores(IN score_data JSON)
+CREATE PROCEDURE sp_import_scores(
+    IN score_data JSON,
+    IN p_semester VARCHAR(20)
+)
 BEGIN
     DECLARE i INT DEFAULT 0;
     DECLARE n INT DEFAULT JSON_LENGTH(score_data);
@@ -255,22 +258,27 @@ BEGIN
     DECLARE v_regular, v_final, v_total DECIMAL(5,2);
     DECLARE v_enroll_id INT;
     WHILE i < n DO
-        SET v_stu_id = JSON_UNQUOTE(JSON_EXTRACT(score_data, CONCAT('$[',i,'].stu_id')));
-        SET v_course_id = JSON_UNQUOTE(JSON_EXTRACT(score_data, CONCAT('$[',i,'].course_id')));
-        SET v_regular = JSON_EXTRACT(score_data, CONCAT('$[',i,'].regular'));
-        SET v_final = JSON_EXTRACT(score_data, CONCAT('$[',i,'].final'));
-        SET v_total = JSON_EXTRACT(score_data, CONCAT('$[',i,'].total'));
-        SET v_exam = JSON_UNQUOTE(JSON_EXTRACT(score_data, CONCAT('$[',i,'].exam')));
-        SELECT enroll_id INTO v_enroll_id FROM enrollment
-        WHERE stu_id = v_stu_id AND course_id = v_course_id AND semester = '2024-2025-1';
+        SET v_stu_id = JSON_UNQUOTE(JSON_EXTRACT(score_data, CONCAT('$[', i, '].stu_id')));
+        SET v_course_id = JSON_UNQUOTE(JSON_EXTRACT(score_data, CONCAT('$[', i, '].course_id')));
+        SET v_regular = JSON_EXTRACT(score_data, CONCAT('$[', i, '].regular'));
+        SET v_final = JSON_EXTRACT(score_data, CONCAT('$[', i, '].final'));
+        SET v_total = JSON_EXTRACT(score_data, CONCAT('$[', i, '].total'));
+        SET v_exam = JSON_UNQUOTE(JSON_EXTRACT(score_data, CONCAT('$[', i, '].exam')));
+        SELECT enroll_id INTO v_enroll_id
+        FROM enrollment
+        WHERE stu_id = v_stu_id AND course_id = v_course_id AND semester = p_semester;
         IF v_enroll_id IS NULL THEN
             INSERT INTO enrollment (stu_id, course_id, semester, enroll_date)
-            VALUES (v_stu_id, v_course_id, '2024-2025-1', CURDATE());
+            VALUES (v_stu_id, v_course_id, p_semester, CURDATE());
             SET v_enroll_id = LAST_INSERT_ID();
         END IF;
         INSERT INTO score (enroll_id, regular_score, final_score, total_score, exam_method)
         VALUES (v_enroll_id, v_regular, v_final, v_total, v_exam)
-        ON DUPLICATE KEY UPDATE regular_score=v_regular, final_score=v_final, total_score=v_total, exam_method=v_exam;
+        ON DUPLICATE KEY UPDATE
+            regular_score = v_regular,
+            final_score   = v_final,
+            total_score   = v_total,
+            exam_method   = v_exam;
         SET i = i + 1;
     END WHILE;
 END $$
