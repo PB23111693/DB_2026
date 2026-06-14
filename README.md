@@ -1,4 +1,4 @@
-```markdown
+
 # 学籍管理系统
 
 > 2026春数据库系统及应用课程设计 —— 一个完整的 B/S 架构学籍管理平台
@@ -28,18 +28,6 @@
 | 数据库 | MySQL 8.0 (存储过程/函数/触发器/事务) |
 | 文件处理 | Pillow (图片缩略图), ReportLab (PDF) |
 | 安全 | Werkzeug 密码哈希, 上传白名单 |
-
-## 🏗 系统架构
-
-```text
-Browser (HTML/Bootstrap)
-        ⇅ HTTP
-   Flask App (Python)
-        ⇅
- SQLAlchemy ORM
-        ⇅
-   MySQL 8.0
-```
 
 采用 **B/S 架构**，用户通过浏览器访问，前端模板由 Jinja2 渲染，后端核心业务逻辑封装在路由和数据库对象中，实现了清晰的层次分离。
 
