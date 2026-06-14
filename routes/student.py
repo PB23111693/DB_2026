@@ -64,13 +64,13 @@ def add():
                 if not User.query.filter_by(username=stu_id).first():
                     user = User(
                         username=stu_id,
-                        password_hash=generate_password_hash(stu_id),
+                        password_hash=generate_password_hash('123456'),  # 统一初始密码
                         role='student',
                         name=student.name,
                         related_id=stu_id
                     )
                     db.session.add(user)
-                    flash('已同步创建学生登录账号，用户名和初始密码均为学号。', 'info')
+                    flash(f'已同步创建学生登录账号，用户名为 {stu_id}，初始密码为 123456。', 'info')
                 else:
                     flash('该用户名已存在，跳过创建账号。', 'warning')
 
